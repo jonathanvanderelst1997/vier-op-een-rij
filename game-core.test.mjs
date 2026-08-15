@@ -19,17 +19,14 @@ function boardWith(cells) {
   const board = boardWith([[5, 0, 'rood'], [5, 1, 'rood'], [5, 2, 'rood'], [5, 3, 'rood']])
   assert.equal(hasWinner(board, 'rood'), true, 'horizontal win')
 }
-
 {
   const board = boardWith([[5, 2, 'geel'], [4, 2, 'geel'], [3, 2, 'geel'], [2, 2, 'geel']])
   assert.equal(hasWinner(board, 'geel'), true, 'vertical win')
 }
-
 {
   const board = boardWith([[5, 0, 'rood'], [4, 1, 'rood'], [3, 2, 'rood'], [2, 3, 'rood']])
   assert.equal(hasWinner(board, 'rood'), true, 'descending diagonal win')
 }
-
 {
   const board = boardWith([[2, 0, 'geel'], [3, 1, 'geel'], [4, 2, 'geel'], [5, 3, 'geel']])
   assert.equal(hasWinner(board, 'geel'), true, 'ascending diagonal win')
@@ -38,8 +35,17 @@ function boardWith(cells) {
 {
   const board = createBoard()
   for (let row = 0; row < ROWS; row += 1) board[row][1] = row % 2 ? 'rood' : 'geel'
+  const before = structuredClone(board)
   assert.equal(findDropRow(board, 1), -1)
   assert.equal(placeDisc(board, 1, 'rood'), null, 'full column rejects move')
+  assert.deepEqual(board, before, 'rejected full-column move must not mutate board')
+}
+
+for (const [column, player] of [[-1, 'rood'], [COLS, 'geel'], [0, 'blauw']]) {
+  const board = createBoard()
+  const before = structuredClone(board)
+  assert.equal(placeDisc(board, column, player), null, `invalid move rejected: ${column}/${player}`)
+  assert.deepEqual(board, before, 'invalid move must not mutate board')
 }
 
 {
