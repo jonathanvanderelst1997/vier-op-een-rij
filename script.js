@@ -1,4 +1,4 @@
-import { COLS, ROWS, createBoard, findDropRow, hasWinner, isDraw, nextPlayer, placeDisc } from './game-core.mjs'
+import { COLS, ROWS, applyMove, createGameState, findDropRow, resetGameState } from './game-core.mjs'
 
 document.addEventListener('DOMContentLoaded', () => {
   const boardElement = document.getElementById('spelbord')
@@ -6,29 +6,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const statusElement = document.getElementById('status')
   const resetButton = document.getElementById('opnieuw')
 
-  let board = createBoard()
-  let currentPlayer = 'rood'
-  let gameOver = false
+  let state = createGameState()
 
   const playerLabel = (player) => player === 'rood' ? 'Rood' : 'Geel'
-  const isColumnFull = (column) => findDropRow(board, column) < 0
-
-  function setStatus(message) { statusElement.textContent = message }
+  const isColumnFull = (column) => findDropRow(state.board, column) < 0
+  const setStatus = (message) => { statusElement.textContent = message }
 
   function renderBoard() {
     boardElement.replaceChildren()
     for (let row = 0; row < ROWS; row += 1) {
       for (let column = 0; column < COLS; column += 1) {
         const cell = document.createElement('button')
-        const occupant = board[row][column]
+        const occupant = state.board[row][column]
         cell.type = 'button'
         cell.className = `cel${occupant ? ` ${occupant}` : ''}`
         cell.dataset.column = String(column)
         cell.dataset.row = String(row)
+        cell.setAttribute('aria-rowindex', String(row + 1))
+        cell.setAttribute('aria-colindex', String(column + 1))
         cell.setAttribute('aria-label', occupant
           ? `Rij ${row + 1}, kolom ${column + 1}: ${playerLabel(occupant)}`
           : `Rij ${row + 1}, kolom ${column + 1}: leeg. Plaats in kolom ${column + 1}`)
-        cell.disabled = gameOver || isColumnFull(column)
+        cell.disabled = state.gameOver || isColumnFull(column)
         cell.addEventListener('click', () => handleMove(column))
         boardElement.appendChild(cell)
       }
@@ -44,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
       button.textContent = String(column + 1)
       button.dataset.column = String(column)
       button.setAttribute('aria-label', `Plaats schijf in kolom ${column + 1}`)
-      button.disabled = gameOver || isColumnFull(column)
+      button.disabled = state.gameOver || isColumnFull(column)
       button.addEventListener('click', () => handleMove(column))
       columnControls.appendChild(button)
     }
@@ -53,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function refresh(focusColumn = null) {
     renderColumnControls()
     renderBoard()
-    if (Number.isInteger(focusColumn) && !gameOver) {
+    if (Number.isInteger(focusColumn) && !state.gameOver) {
       const preferred = columnControls.querySelector(`button[data-column="${focusColumn}"]:not(:disabled)`)
       const fallback = columnControls.querySelector('button:not(:disabled)')
       ;(preferred || fallback)?.focus()
@@ -61,38 +60,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleMove(column) {
-    if (gameOver) return
-    const move = placeDisc(board, column, currentPlayer)
-    if (!move) {
-      setStatus(`Kolom ${column + 1} is vol. ${playerLabel(currentPlayer)} is nog aan de beurt.`)
+    const result = applyMove(state, column)
+    if (result.reason === 'game_over') return
+    if (result.reason === 'invalid_or_full') {
+      setStatus(`Kolom ${column + 1} is vol. ${playerLabel(state.currentPlayer)} is nog aan de beurt.`)
       refresh(column)
       return
     }
 
-    if (hasWinner(board, currentPlayer)) {
-      gameOver = true
-      setStatus(`${playerLabel(currentPlayer)} wint!`)
+    state = result.state
+    if (result.reason === 'win') {
+      setStatus(`${playerLabel(state.winner)} wint!`)
       refresh()
       resetButton.focus()
       return
     }
-    if (isDraw(board)) {
-      gameOver = true
+    if (result.reason === 'draw') {
       setStatus('Gelijkspel: het bord is vol.')
       refresh()
       resetButton.focus()
       return
     }
 
-    currentPlayer = nextPlayer(currentPlayer)
-    setStatus(`${playerLabel(currentPlayer)} is aan de beurt.`)
+    setStatus(`${playerLabel(state.currentPlayer)} is aan de beurt.`)
     refresh(column)
   }
 
   function resetGame() {
-    board = createBoard()
-    currentPlayer = 'rood'
-    gameOver = false
+    state = resetGameState()
     setStatus('Rood begint.')
     refresh(0)
   }
