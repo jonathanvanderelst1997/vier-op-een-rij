@@ -2,11 +2,19 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Vier op een Rij</title>
     <link rel="stylesheet" href="stijl.css">
 </head>
 <body>
-    <div id="spelbord"></div>
-    <script src="script.js"></script>
+    <main class="spel">
+        <h1>Vier op een Rij</h1>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+        <div id="kolomknoppen" class="kolomknoppen" aria-label="Kolommen"></div>
+        <div id="spelbord" role="grid" aria-label="Vier op een Rij spelbord"></div>
+        <button id="opnieuw" class="opnieuw" type="button">Opnieuw spelen</button>
+        <p class="uitleg">Rood = R, geel = G. Kies een kolom met de knoppen of tik rechtstreeks op het bord.</p>
+    </main>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
