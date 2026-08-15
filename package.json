@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node game-core.test.mjs",
+    "test": "node game-core.test.mjs && node game-replay.test.mjs && node static-a11y.test.mjs",
     "check": "npm test"
   },
   "engines": { "node": ">=20" }
