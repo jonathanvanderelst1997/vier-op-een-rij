@@ -1,19 +1,94 @@
-#spelbord {
-    display: grid;
-    grid-template-columns: repeat(7, 60px);
-    grid-template-rows: repeat(6, 60px);
-    gap: 10px;
-    margin: 20px auto;
-    max-width: 450px;
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #f5f5f5;
+    color: #111;
 }
 
-.cel {
-    width: 60px;
-    height: 60px;
-    background-color: #ddd;
-    border-radius: 50%;
+.spel {
+    width: min(96vw, 560px);
+    margin: 0 auto;
+    padding: 20px 12px 32px;
+    text-align: center;
+}
+
+.status {
+    min-height: 1.5em;
+    font-weight: 700;
+}
+
+.kolomknoppen,
+#spelbord {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(36px, 1fr));
+    gap: clamp(4px, 1.5vw, 10px);
+}
+
+.kolomknoppen {
+    margin: 14px 0 8px;
+}
+
+.kolomknop,
+.opnieuw {
+    min-height: 44px;
+    font: inherit;
+    font-weight: 700;
+    border: 2px solid #222;
+    border-radius: 10px;
+    background: white;
+    color: #111;
     cursor: pointer;
 }
 
-.rood { background-color: red; }
-.geel { background-color: yellow; }
+#spelbord {
+    width: 100%;
+    padding: clamp(6px, 2vw, 14px);
+    background: #164b9b;
+    border-radius: 14px;
+}
+
+.cel {
+    width: 100%;
+    aspect-ratio: 1;
+    border: 2px solid #12376f;
+    border-radius: 50%;
+    background: #eee;
+    color: #111;
+    font: 800 clamp(13px, 3vw, 22px)/1 system-ui, sans-serif;
+    cursor: pointer;
+    position: relative;
+}
+
+.cel.rood { background: #d7263d; color: #fff; }
+.cel.geel { background: #ffd23f; color: #111; }
+.cel.rood::after { content: 'R'; }
+.cel.geel::after { content: 'G'; }
+
+button:focus-visible {
+    outline: 4px solid #111;
+    outline-offset: 2px;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: .8;
+}
+
+.opnieuw {
+    margin-top: 16px;
+    padding: 10px 18px;
+}
+
+.uitleg {
+    font-size: .95rem;
+    line-height: 1.45;
+}
+
+@media (max-width: 420px) {
+    .spel { padding-inline: 6px; }
+    .kolomknoppen,
+    #spelbord { gap: 4px; }
+    #spelbord { padding: 6px; }
+}
