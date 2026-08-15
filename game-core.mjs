@@ -23,13 +23,7 @@ export function placeDisc(board, column, player) {
 }
 
 export function hasWinner(board, player) {
-  const directions = [
-    [0, 1],
-    [1, 0],
-    [1, 1],
-    [1, -1],
-  ]
-
+  const directions = [[0, 1], [1, 0], [1, 1], [1, -1]]
   for (let row = 0; row < ROWS; row += 1) {
     for (let column = 0; column < COLS; column += 1) {
       if (board[row][column] !== player) continue
@@ -42,9 +36,7 @@ export function hasWinner(board, player) {
             nextRow < 0 || nextRow >= ROWS ||
             nextColumn < 0 || nextColumn >= COLS ||
             board[nextRow][nextColumn] !== player
-          ) {
-            break
-          }
+          ) break
           connected += 1
         }
         if (connected >= 4) return true
@@ -60,4 +52,38 @@ export function isDraw(board) {
 
 export function nextPlayer(player) {
   return player === 'rood' ? 'geel' : 'rood'
+}
+
+export function createGameState() {
+  return { board: createBoard(), currentPlayer: 'rood', gameOver: false, winner: null, draw: false }
+}
+
+export function applyMove(state, column) {
+  if (state.gameOver) return { state, move: null, reason: 'game_over' }
+  const board = state.board.map((row) => [...row])
+  const move = placeDisc(board, column, state.currentPlayer)
+  if (!move) return { state, move: null, reason: 'invalid_or_full' }
+  if (hasWinner(board, state.currentPlayer)) {
+    return {
+      state: { ...state, board, gameOver: true, winner: state.currentPlayer, draw: false },
+      move,
+      reason: 'win',
+    }
+  }
+  if (isDraw(board)) {
+    return {
+      state: { ...state, board, gameOver: true, winner: null, draw: true },
+      move,
+      reason: 'draw',
+    }
+  }
+  return {
+    state: { ...state, board, currentPlayer: nextPlayer(state.currentPlayer) },
+    move,
+    reason: 'continue',
+  }
+}
+
+export function resetGameState() {
+  return createGameState()
 }
