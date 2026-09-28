@@ -1,0 +1,51 @@
+# Deze naam wordt de binding in de Gateway: config/repositories.json
+# (managed_ci_workflow) en config/operator-repositories.json (required_workflows)
+# noemen "Vier op een rij Validate" op dit pad, en de operator zoekt runs op
+# precies die naam. Hernoem je hem, dan wordt die controle nooit meer groen.
+name: Vier op een rij Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    # Deze repo is publiek: GitHub-gehoste runners kosten hier geen minuten.
+    # Laat deze job nooit naar een self-hosted runner verhuizen. Bij een
+    # publieke repo kan elke fork een PR openen, en die code zou dan op de Mac
+    # van de eigenaar draaien.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6
+        with:
+          # package.json vraagt node >=20; 22 is de LTS waarmee lokaal getest is.
+          node-version: 22
+
+      # Geen npm ci: er zijn geen afhankelijkheden en geen lockfile. De toetsen
+      # zijn gewone node-scripts: spelregels, vaste replays en de statische
+      # toegankelijkheidscontrole.
+      - name: npm test
+        run: npm test
+
+      # De toetsen horen niets te schrijven. Doet een toets dat toch, dan is
+      # dat een fout en geen groene run.
+      - name: Boom is schoon na de toetsen
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::npm test wijzigde of maakte bestanden:"
+            git status --porcelain
+            exit 1
+          fi
